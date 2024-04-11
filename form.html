@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up Form</title>
+    <link href='https://fonts.googleapis.com/css?family=Nunito:400,300' rel='stylesheet' type='text/css'>
+    <style>
+        body {
+            background-image: url('https://img.freepik.com/premium-photo/green-technological-wave-background-3d-modern-tech-wallpaper-generative-ai_159242-22735.jpg');
+            background-size: cover; /* Cover the entire viewport */
+            background-position: center; /* Center the background image */
+        }
+
+        /* Error Style */
+        .error {
+            border-color: red;
+        }
+
+        .error-message {
+            color: red;
+        }
+
+        /* Success Style */
+        .success {
+            border-color: green;
+        }
+
+        .success-message {
+            color: green;
+        }
+        
+        /* Form container */
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-image: url('https://static.wixstatic.com/media/2edccb_a09c394742a947eb8dbca4dd072ba6de~mv2.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+        }
+
+        /* Form fields */
+        .form-field {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: border-color 0.3s;
+        }
+
+        input[type="radio"],
+        input[type="checkbox"] {
+            margin: 0 4px 8px 0;
+        }
+
+        select {
+            padding: 10px;
+        }
+
+        button {
+            padding: 15px;
+            background-color: #4bc970;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        .form-field label {
+            font-weight: bold;
+        }
+
+        .form-field label.light {
+            font-weight: normal;
+        }
+
+        .error-message {
+            color: red;
+        }
+
+        .success-message {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <form id="signupForm" action="index.html" method="post" onsubmit="return validateForm()" autocomplete="off">
+            <h1>Sign Up</h1>
+            <div class="form-field">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="user_name">
+                <div id="name-error" class="error-message"></div>
+            </div>
+            <div class="form-field">
+                <label for="phone">Phone number:</label>
+                <input type="tel" id="phone" name="user_phone">
+                <div id="phone-error" class="error-message"></div>
+            </div>
+            <div class="form-field">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="user_password">
+                <div id="password-error" class="error-message"></div>
+            </div>
+            <div class="form-field" id="gender">
+                <label>Gender:</label>
+                <input type="radio" id="male" value="male" name="user_gender"><label for="male" class="light">Male</label>
+                <input type="radio" id="female" value="female" name="user_gender"><label for="female" class="light">Female</label>
+                <input type="radio" id="other" value="other" name="user_gender"><label for="other" class="light">Other</label>
+                <div id="gender-error" class="error-message"></div>
+            </div>
+            <div class="form-field">
+                <label for="state">State:</label>
+                <select id="state" name="user_state">
+                    <option value="">Select State</option>
+                    <option value="TN">Andhra Pradesh</option>
+                    <option value="KL">Kerala</option>
+                    <option value="AP">Tamil Nadu</option>
+                    <option value="KA">Karnataka</option>
+                </select>
+                <div id="state-error" class="error-message"></div>
+            </div>
+            <div class="form-field">
+                <input class="form-check-input" type="checkbox" id="acceptCheck" name="acceptCheck">
+                <label for="acceptCheck">I accept the terms and conditions</label>
+                <div id="acceptCheck-error" class="error-message"></div>
+            </div>
+            <div id="empty-fields-error" class="error-message"></div>
+            <button type="submit" class="btn btn-primary">Sign in</button>
+        </form>
+    </div>
+
+    <script>
+        function validateForm() {
+            var name = document.getElementById('name');
+            var phone = document.getElementById('phone');
+            var password = document.getElementById('password');
+            var acceptCheck = document.getElementById('acceptCheck').checked;
+            var gender = document.querySelector('input[name="user_gender"]:checked');
+            var state = document.getElementById('state');
+
+            // Reset error messages and styles
+            var errorFields = document.querySelectorAll('.error-message');
+            errorFields.forEach(function (element) {
+                element.textContent = '';
+            });
+
+            var inputFields = document.querySelectorAll('.form-field input, .form-field select');
+            inputFields.forEach(function (element) {
+                element.classList.remove('error');
+            });
+
+            // Validate name
+            if (name.value.trim() === '') {
+                document.getElementById('name-error').textContent = 'Please enter your name.';
+                name.classList.add('error');
+            }
+
+            // Validate phone number
+            var phoneRegex = /^\d{10}$/;
+            if (!phoneRegex.test(phone.value)) {
+                document.getElementById('phone-error').textContent = 'Please enter a valid phone number.';
+                phone.classList.add('error');
+            }
+
+            // Validate password
+            if (password.value.length < 5 || !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password.value)) {
+                document.getElementById('password-error').textContent = 'Password must be at least 5 characters long and contain at least one special character.';
+                password.classList.add('error');
+            }
+
+            // Validate gender
+            if (!gender) {
+                document.getElementById('gender-error').textContent = 'Please select your gender.';
+            }
+
+            // Validate state
+            if (state.value === '') {
+                document.getElementById('state-error').textContent = 'Please select your state.';
+            }
+
+            // Validate acceptCheck
+            if (!acceptCheck) {
+                document.getElementById('acceptCheck-error').textContent = 'Please accept the terms and conditions.';
+            }
+
+            // Check if any fields are empty
+           
+            if (name === '' || phone === '' || password === '' || gender === null || state === '' || !acceptCheck) {
+                document.getElementById('empty-fields-error').textContent = 'Please fill in all required fields.';
+                return false;
+            }
+
+            // Form submission successful
+            alert('Form submitted successfully!');
+            return true;
+        }
+    </script>
+</body>
+</html>
