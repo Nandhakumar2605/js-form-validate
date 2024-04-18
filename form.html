@@ -8,8 +8,8 @@
     <style>
         body {
             background-image: url('https://img.freepik.com/premium-photo/green-technological-wave-background-3d-modern-tech-wallpaper-generative-ai_159242-22735.jpg');
-            background-size: cover; /* Cover the entire viewport */
-            background-position: center; /* Center the background image */
+            background-size: cover;
+            background-position: center;
         }
 
         /* Error Style */
@@ -20,15 +20,6 @@
         .error-message {
             color: red;
         }
-
-        /* Success Style */
-        .success {
-            border-color: green;
-        }
-
-        .success-message {
-            color: green;
-        }
         
         /* Form container */
         .form-container {
@@ -38,28 +29,37 @@
             background-image: url('https://static.wixstatic.com/media/2edccb_a09c394742a947eb8dbca4dd072ba6de~mv2.jpg');
             background-size: cover;
             background-position: center;
-            border-radius: 8px;
+            border-radius: 1px;
         }
 
         /* Form fields */
         .form-field {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         input[type="text"],
         input[type="password"],
-        input[type="tel"],
+        input[type="number"],
         select {
             width: 100%;
-            padding: 15px;
+            padding: 4px;
+            border-radius: 10px;
+           
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            background-color:rgba(255, 255, 255, 0.9);
+            transition: border-color 0.3s;
+        }
+        textarea {
+            width: 100%;
+            padding: 4px;
             border-radius: 5px;
             border: 1px solid #ccc;
             margin-bottom: 10px;
             box-sizing: border-box;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color:rgba(255, 255, 255, 0.9);
             transition: border-color 0.3s;
         }
-
         input[type="radio"],
         input[type="checkbox"] {
             margin: 0 4px 8px 0;
@@ -91,15 +91,11 @@
         .error-message {
             color: red;
         }
-
-        .success-message {
-            color: green;
-        }
     </style>
 </head>
 <body>
     <div class="form-container">
-        <form id="signupForm" action="index.html" method="post" onsubmit="return validateForm()" autocomplete="off">
+        <form id="signupForm" autocomplete="on">
             <h1>Sign Up</h1>
             <div class="form-field">
                 <label for="name">Name:</label>
@@ -107,14 +103,24 @@
                 <div id="name-error" class="error-message"></div>
             </div>
             <div class="form-field">
+                <label for="email">Email:</label>
+                <input type="text" id="email" name="email">
+                <div id="email-error" class="error-message"></div>
+            </div>
+            <div class="form-field">
                 <label for="phone">Phone number:</label>
-                <input type="tel" id="phone" name="user_phone">
+                <input type="number" id="phone" name="user_phone">
                 <div id="phone-error" class="error-message"></div>
             </div>
             <div class="form-field">
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="user_password">
                 <div id="password-error" class="error-message"></div>
+            </div>
+            <div class="form-field">
+                <label for="confirm-password">Confirm Password:</label>
+                <input type="password" id="confirm-password" name="confirm_password">
+                <div id="confirm-password-error" class="error-message"></div>
             </div>
             <div class="form-field" id="gender">
                 <label>Gender:</label>
@@ -127,12 +133,29 @@
                 <label for="state">State:</label>
                 <select id="state" name="user_state">
                     <option value="">Select State</option>
-                    <option value="TN">Andhra Pradesh</option>
+                    <option value="AP">Andhra Pradesh</option>
                     <option value="KL">Kerala</option>
-                    <option value="AP">Tamil Nadu</option>
+                    <option value="TN">Tamil Nadu</option>
                     <option value="KA">Karnataka</option>
                 </select>
                 <div id="state-error" class="error-message"></div>
+                <div class="form-field">
+                    <label for="district">District:</label>
+                    <select id="district" name="user_district">
+                        <option value="">Select District</option>
+                    </select>
+                    <div id="district-error" class="error-message"></div>
+                </div>
+            </div>
+            <div class="form-field">
+                <label for="address">Address:</label>
+                <textarea id="address" name="address" rows="4" cols="50"></textarea>
+                <div id="address-error" class="error-message"></div>
+            </div>
+            <div class="form-field">
+                <label for="pincode">Pin code:</label>
+                <input type="number" id="pincode" name="user_pincode">
+                <div id="pincode-error" class="error-message"></div>
             </div>
             <div class="form-field">
                 <input class="form-check-input" type="checkbox" id="acceptCheck" name="acceptCheck">
@@ -140,75 +163,334 @@
                 <div id="acceptCheck-error" class="error-message"></div>
             </div>
             <div id="empty-fields-error" class="error-message"></div>
-            <button type="submit" class="btn btn-primary">Sign in</button>
+            <button type="button" onclick="validateForm()">Sign in</button>
         </form>
     </div>
-
     <script>
-        function validateForm() {
-            var name = document.getElementById('name');
-            var phone = document.getElementById('phone');
-            var password = document.getElementById('password');
-            var acceptCheck = document.getElementById('acceptCheck').checked;
-            var gender = document.querySelector('input[name="user_gender"]:checked');
-            var state = document.getElementById('state');
+      var districtData = {
+            "TN": ["Namakkal", "Salem", "Karur"],
+            "KL": ["Palakkad", "Thiruvananthapuram", "Kozhikode"],
+            "AP": ["East Godavari", "Nellore", "Kurnool"],
+            "KA": ["Chikballapur", "Bagalkot", "Bidar"]
+        };
 
-            // Reset error messages and styles
-            var errorFields = document.querySelectorAll('.error-message');
-            errorFields.forEach(function (element) {
-                element.textContent = '';
-            });
+        // Function to populate district options based on selected state
+        function populateDistricts() {
+            var stateSelect = document.getElementById('state');
+            var districtSelect = document.getElementById('district');
+            var selectedState = stateSelect.value;
+            districtSelect.innerHTML = ''; // Clear previous options
 
-            var inputFields = document.querySelectorAll('.form-field input, .form-field select');
-            inputFields.forEach(function (element) {
-                element.classList.remove('error');
-            });
-
-            // Validate name
-            if (name.value.trim() === '') {
-                document.getElementById('name-error').textContent = 'Please enter your name.';
-                name.classList.add('error');
+            if (selectedState !== '') {
+                var districts = districtData[selectedState];
+                for (var i = 0; i < districts.length; i++) {
+                    var option = document.createElement('option');
+                    option.value = districts[i];
+                    option.textContent = districts[i];
+                    districtSelect.appendChild(option);
+                }
+            } else {
+                var option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'Select District';
+                districtSelect.appendChild(option);
             }
-
-            // Validate phone number
-            var phoneRegex = /^\d{10}$/;
-            if (!phoneRegex.test(phone.value)) {
-                document.getElementById('phone-error').textContent = 'Please enter a valid phone number.';
-                phone.classList.add('error');
-            }
-
-            // Validate password
-            if (password.value.length < 5 || !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password.value)) {
-                document.getElementById('password-error').textContent = 'Password must be at least 5 characters long and contain at least one special character.';
-                password.classList.add('error');
-            }
-
-            // Validate gender
-            if (!gender) {
-                document.getElementById('gender-error').textContent = 'Please select your gender.';
-            }
-
-            // Validate state
-            if (state.value === '') {
-                document.getElementById('state-error').textContent = 'Please select your state.';
-            }
-
-            // Validate acceptCheck
-            if (!acceptCheck) {
-                document.getElementById('acceptCheck-error').textContent = 'Please accept the terms and conditions.';
-            }
-
-            // Check if any fields are empty
-           
-            if (name === '' || phone === '' || password === '' || gender === null || state === '' || !acceptCheck) {
-                document.getElementById('empty-fields-error').textContent = 'Please fill in all required fields.';
-                return false;
-            }
-
-            // Form submission successful
-            alert('Form submitted successfully!');
-            return true;
         }
+
+        // Add event listener to state select element
+        document.getElementById('state').addEventListener('change', populateDistricts);
+
+    function validateForm() {
+        var name = document.getElementById('name').value.trim();
+        var email = document.getElementById('email').value.trim();
+        var phone = document.getElementById('phone').value.trim();
+        var password = document.getElementById('password').value.trim();
+        var confirmPassword = document.getElementById('confirm-password').value.trim();
+        var acceptCheck = document.getElementById('acceptCheck').checked;
+        var gender = document.querySelector('input[name="user_gender"]:checked');
+        var state = document.getElementById('state').value;
+        var districtSelect = document.getElementById('district').value;
+        var address = document.getElementById('address').value.trim();
+        var pincode = document.getElementById('pincode').value.trim();
+    
+        // Reset error messages and styles
+        var errorFields = document.querySelectorAll('.error-message');
+        errorFields.forEach(function (element) {
+            element.textContent = '';
+        });
+        
+    
+        var inputFields = document.querySelectorAll('.form-field input, .form-field select');
+        inputFields.forEach(function (element) {
+            element.classList.remove('error');
+        });
+    
+        // Validate name
+        if (name === '') {
+            document.getElementById('name-error').textContent = 'Please enter your name.';
+            document.getElementById('name').classList.add('error');
+        }
+    
+        // Validate email
+        if (email === '') {
+            document.getElementById('email-error').textContent = 'Please enter an email address.';
+            document.getElementById('email').classList.add('error');
+        } else {
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                document.getElementById('email-error').textContent = 'Please enter a valid email address.';
+                document.getElementById('email').classList.add('error');
+            }
+        }
+    
+        // Validate phone number
+        if (phone === '') {
+            document.getElementById('phone-error').textContent = 'Please enter a phone number.';
+            document.getElementById('phone').classList.add('error');
+        } else {
+            var phoneRegex = /^[6-9]\d{9}$/;
+            if (!phoneRegex.test(phone)) {
+                document.getElementById('phone-error').textContent = 'Please enter a valid phone number.';
+                document.getElementById('phone').classList.add('error');
+            }
+        }
+    
+        // Validate password
+        if (password === '') {
+            document.getElementById('password-error').textContent = 'Please enter a password.';
+            document.getElementById('password').classList.add('error');
+        } else {
+            var passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+            if (!passwordRegex.test(password)) {
+                document.getElementById('password-error').textContent = 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.';
+                document.getElementById('password').classList.add('error');
+            }
+        }
+    
+        // Validate confirm password
+        if (confirmPassword === '') {
+            document.getElementById('confirm-password-error').textContent = 'Please confirm your password.';
+            document.getElementById('confirm-password').classList.add('error');
+        } else {
+            if (confirmPassword !== password) {
+                document.getElementById('confirm-password-error').textContent = 'Passwords do not match.';
+                document.getElementById('confirm-password').classList.add('error');
+            }
+        }
+    
+        // Validate gender
+        if (!gender) {
+            document.getElementById('gender-error').textContent = 'Please select your gender.';
+        }
+    
+        // Validate state
+        if (state === '') {
+            document.getElementById('state-error').textContent = 'Please select your state.';
+        }
+    
+        // Validate district
+        if (districtSelect === '') {
+            document.getElementById('district-error').textContent = 'Please select your district.';
+        }
+          // Validate pincode
+        var pincodeRegex = /^[1-9][0-9]{5}$/;
+        if (pincode === '') {
+            document.getElementById('pincode-error').textContent = 'Please enter a pincode.';
+            document.getElementById('pincode').classList.add('error');
+        } else if (!pincodeRegex.test(pincode)) {
+            document.getElementById('pincode-error').textContent = 'Please enter a valid Indian pincode.';
+            document.getElementById('pincode').classList.add('error');
+        }
+           
+          // Validate address
+          if (address === '') {
+         document.getElementById('address-error').textContent = 'Please enter your address.';
+         document.getElementById('address').classList.add('error');
+       } else {
+       var addressRegex = /^(\d{1,}\/\d{1,}),?\s*([a-zA-Z0-9\s]+),?\s*([a-zA-Z\s]+),?\s*([a-zA-Z\s]+)\.$/;
+      if (!addressRegex.test(address)) {
+        document.getElementById('address-error').textContent = 'Please enter a valid address.Ex: 2/23,mainstreet,salemroad,namakkal.';
+        document.getElementById('address').classList.add('error');
+        return; // Added return statement to stop further execution if address is invalid
+    } else {
+        document.getElementById('address-error').textContent = '';
+        document.getElementById('address').classList.remove('error');
+    }
+}
+      
+        // Validate acceptCheck
+        if (!acceptCheck) {
+            document.getElementById('acceptCheck-error').textContent = 'Please accept the terms and conditions.';
+        }
+     
+        // Check if any fields are empty
+        if (name === '' || email === '' || phone === '' || password === '' || confirmPassword === '' || gender === null || state === '' || districtSelect === '' || address === '' || pincode === '' || !acceptCheck) {
+            document.getElementById('empty-fields-error').textContent = 'Please fill in all required fields.';
+            return;
+        }
+    
+        // Construct JSON object
+        var formData = {
+            name: name,
+            email: email,
+            phone: phone,
+            password: password,
+            gender: gender.value,
+            state: state,
+            district: districtSelect,
+            address: address,
+            pincode: pincode,
+            acceptCheck: acceptCheck
+        };
+    
+        var jsonString = JSON.stringify(formData);
+    
+        // using Ajax
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'process_form.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    alert('Form submitted successfully!');
+                    window.location.href = 'index.php'; // Redirect to index.html after successful submission
+                } else {
+                    alert('There was a problem submitting the form.');
+                    // Handle errors here if needed
+                }
+            }
+        };
+        xhr.send(jsonString);
+    }
     </script>
+    </body>
+</html>
+
+
+
+
+
+
+<?php
+// Check if the form data is received
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Get the JSON data sent via Ajax
+    $json_data = file_get_contents('php://input');
+
+    // Decode JSON data into PHP associative array
+    $form_data = json_decode($json_data, true);
+
+    // Extract form data
+    $name = $form_data['name'];
+    $email = $form_data['email'];
+    $phone = $form_data['phone'];
+    $password = $form_data['password'];
+    $gender = $form_data['gender'];
+    $state = $form_data['state'];
+    $district = $form_data['district'];
+    $address = $form_data['address'];
+    $pincode = $form_data['pincode'];
+    $acceptCheck = $form_data['acceptCheck'];
+
+    // Hash the password for security
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+    // Database connection parameters
+    $servername = "localhost";
+    $username = "root";
+    $password = ""; // Enter your MySQL password here
+    $dbname = "student"; // Enter your database name here
+
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+    // Prepare and bind SQL statement
+    $stmt = $conn->prepare("INSERT INTO users (name, email, phone, password, gender, state, district, address, pincode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssssss", $name, $email, $phone, $hashed_password, $gender, $state, $district, $address, $pincode);
+
+    // Execute SQL statement
+    if ($stmt->execute() === TRUE) {
+        echo "Form submitted successfully!";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+
+    // Close statement and connection
+    $stmt->close();
+    $conn->close();
+}
+?>
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Data</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+</head>
+<body>
+   
+<table class="table">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Email</th>
+      <th scope="col">Phone</th>
+      <th scope="col">Password</th>
+      <th scope="col">Gender</th>
+      <th scope="col">State</th>
+      <th scope="col">District</th>
+      <th scope="col">Address</th>
+      <th scope="col">Pincode</th>
+      <th scope="col">Edit</th>
+      <th scope="col">Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "student";
+    
+    $conn = new mysqli($servername, $username, $password, $dbname);
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+
+    $sql = "SELECT * FROM users";
+    $result = mysqli_query($conn, $sql);
+    while ($row = mysqli_fetch_array($result)) {
+        ?>
+        <tr>
+            <td><?php echo $row['name']; ?></td>
+            <td><?php echo $row['email']; ?></td>
+            <td><?php echo $row['phone']; ?></td>
+            <td><?php echo $row['password']; ?></td> 
+            <td><?php echo $row['gender']; ?></td>
+            <td><?php echo $row['state']; ?></td>
+            <td><?php echo $row['district']; ?></td>
+            <td><?php echo $row['address']; ?></td>
+            <td><?php echo $row['pincode']; ?></td>
+            <td><button class="btn btn-success"> <a href='edit.php?edit=<?php echo $row['id']; ?>' class="text-light"> Edit </a> </button> </td>
+            <td><button class="btn btn-danger"><a href='delete.php?delete=<?php echo $row['id']; ?>' class="text-light"> Delete </a> </button></td> 
+        </tr>
+    <?php
+    }
+    $conn->close();
+    ?>
+  </tbody>
+</table>
+
 </body>
 </html>
